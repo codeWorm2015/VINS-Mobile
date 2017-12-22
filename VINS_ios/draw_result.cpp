@@ -422,6 +422,9 @@ void DrawResult::drawBox(cv::Mat &result, Vector3f corner_0, Vector3f corner_x, 
     vector<cv::Point2f> boxImage;
     Eigen::Vector3f Pc;
     vector<float> depth_of_coner;
+    
+    std::cout<<" 正方形坐标: "<<std::endl;
+    
     for(auto it : boxConers)
     {
         if (inAR)
@@ -442,6 +445,7 @@ void DrawResult::drawBox(cv::Mat &result, Vector3f corner_0, Vector3f corner_x, 
             pts.y = Fy * Pc.y() / Pc.z()+ X0;
         }
         depth_of_coner.push_back(Pc.norm());
+//        std::cout<<pts<<std::endl;
         boxImage.push_back(pts);
     }
     if(Pc.z() <0)
@@ -484,33 +488,39 @@ void DrawResult::drawBox(cv::Mat &result, Vector3f corner_0, Vector3f corner_x, 
         {2,3,7,6, 1,5,7,3, 4,5,7,6}};
     float aver_depth = 0;
     
-    plain[0][0] = p[point_group[min_index][4]];
-    plain[0][1] = p[point_group[min_index][5]];
-    plain[0][2] = p[point_group[min_index][6]];
-    plain[0][3] = p[point_group[min_index][7]];
+    plain[0][0] = p[point_group[0][4]];
+    plain[0][1] = p[point_group[0][5]];
+    plain[0][2] = p[point_group[0][6]];
+    plain[0][3] = p[point_group[0][7]];
     cv::fillPoly(result, ppt, npts, 1, cv::Scalar(0, 200, 0));
+    cout<< "mat size - rows: " <<result.rows<<" cols: "<<result.cols<<endl;
+    cout<< "plain 0 0: " <<plain[0][0]<<endl;
+    cout<< "plain 0 1: " <<plain[0][1]<<endl;
+    cout<< "plain 0 2: " <<plain[0][2]<<endl;
+    cout<< "plain 0 3: " <<plain[0][3]<<endl;
     
-    plain[0][0] = p[point_group[min_index][0]];
-    plain[0][1] = p[point_group[min_index][1]];
-    plain[0][2] = p[point_group[min_index][2]];
-    plain[0][3] = p[point_group[min_index][3]];
-    cv::fillPoly(result, ppt, npts, 1, cv::Scalar(200, 0, 0));
     
-    if(depth_of_coner[point_group[min_index][2]] + depth_of_coner[point_group[min_index][3]] >
-       depth_of_coner[point_group[min_index][5]] + depth_of_coner[point_group[min_index][6]])
-    {
-        plain[0][0] = p[point_group[min_index][4]];
-        plain[0][1] = p[point_group[min_index][5]];
-        plain[0][2] = p[point_group[min_index][6]];
-        plain[0][3] = p[point_group[min_index][7]];
-        cv::fillPoly(result, ppt, npts, 1, cv::Scalar(0, 200, 0));
-        
-    }
-    plain[0][0] = p[point_group[min_index][8]];
-    plain[0][1] = p[point_group[min_index][9]];
-    plain[0][2] = p[point_group[min_index][10]];
-    plain[0][3] = p[point_group[min_index][11]];
-    cv::fillPoly(result, ppt, npts, 1, cv::Scalar(0, 0, 200));
+//    plain[0][0] = p[point_group[min_index][0]];
+//    plain[0][1] = p[point_group[min_index][1]];
+//    plain[0][2] = p[point_group[min_index][2]];
+//    plain[0][3] = p[point_group[min_index][3]];
+//    cv::fillPoly(result, ppt, npts, 1, cv::Scalar(200, 0, 0));
+//    
+//    if(depth_of_coner[point_group[min_index][2]] + depth_of_coner[point_group[min_index][3]] >
+//       depth_of_coner[point_group[min_index][5]] + depth_of_coner[point_group[min_index][6]])
+//    {
+//        plain[0][0] = p[point_group[min_index][4]];
+//        plain[0][1] = p[point_group[min_index][5]];
+//        plain[0][2] = p[point_group[min_index][6]];
+//        plain[0][3] = p[point_group[min_index][7]];
+//        cv::fillPoly(result, ppt, npts, 1, cv::Scalar(0, 200, 0));
+//        
+//    }
+//    plain[0][0] = p[point_group[min_index][8]];
+//    plain[0][1] = p[point_group[min_index][9]];
+//    plain[0][2] = p[point_group[min_index][10]];
+//    plain[0][3] = p[point_group[min_index][11]];
+//    cv::fillPoly(result, ppt, npts, 1, cv::Scalar(0, 0, 200));
 }
 
 void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f P_latest, Matrix3f R_latest)

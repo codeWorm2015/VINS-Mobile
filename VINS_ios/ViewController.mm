@@ -363,6 +363,7 @@ Matrix3d pnp_R;
 
 - (void)processImage:(cv::Mat&)image
 {
+    NSLog(@"processImage: %s", __func__);
     if(isCapturing == YES)
     {
         //NSLog(@"image processing");
@@ -370,10 +371,16 @@ Matrix3d pnp_R;
         float highPart = image.at<float>(0,1);
         //image.at<float>(0,0) = image.at<float>(1,0);
         //image.at<float>(0,1) = image.at<float>(1,1);
+        
+        //新建   img_msg
+        
         shared_ptr<IMG_MSG> img_msg(new IMG_MSG());
         //cout << (videoCamera->grayscaleMode) << endl;
         //img_msg->header = [[NSDate date] timeIntervalSince1970];
+        
+        //时间戳
         img_msg->header = [[NSProcessInfo processInfo] systemUptime];
+        
         float Group[2];
         Group[0] = lowPart;
         Group[1] = highPart;
@@ -387,6 +394,8 @@ Matrix3d pnp_R;
             return;
         }
         //img_msg->header = lateast_imu_time;
+        
+        //更新时间戳
         img_msg->header = time_stamp;
         BOOL isNeedRotation = image.size() != frameSize;
         
@@ -436,18 +445,27 @@ Matrix3d pnp_R;
         cv::cvtColor(input_frame, gray, CV_RGBA2GRAY);
         cv::Mat img_with_feature;
         cv::Mat img_equa;
+        
+        //使图像变的清晰
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
         clahe->setClipLimit(3);
         clahe->apply(gray, img_equa);
+        
         //img_equa = gray;
+        
+        //获取特征点
         TS(time_feature);
         
         m_depth_feedback.lock();
+        //上一次的 特征
         featuretracker.solved_features = solved_features;
+        
         featuretracker.solved_vins = solved_vins;
         m_depth_feedback.unlock();
         
         m_imu_feedback.lock();
+        
+        //获取这个 时间戳之前的 imu 数据;
         featuretracker.imu_msgs = getImuMeasurements(img_msg->header);
         m_imu_feedback.unlock();
         
@@ -455,11 +473,23 @@ Matrix3d pnp_R;
         vector<double> track_len;
         bool vins_normal = (vins.solver_flag == VINS::NON_LINEAR);
         featuretracker.use_pnp = USE_PNP;
-        featuretracker.readImage(img_equa, img_with_feature,frame_cnt, good_pts, track_len, img_msg->header, pnp_P, pnp_R, vins_normal);
+        
+        cout<<"feature 前: "<<pnp_P<<endl;
+        cout<<"前  frame_cnt: "<<frame_cnt<<endl;
+        
+        //这一次的图像, 上一次 的位置信息
+        // 得到特征点
+        featuretracker.readImage(img_equa, img_with_feature, frame_cnt, good_pts, track_len, img_msg->header, pnp_P, pnp_R, vins_normal);
+        //得到了 最新的 position  和 rotation
+        
+        cout<<"feature 后: "<<pnp_P<<endl;
+        cout<<"后  frame_cnt: "<<frame_cnt<<endl;
         TE(time_feature);
+        
         //cvtColor(img_equa, img_equa, CV_GRAY2BGR);
         for (int i = 0; i < good_pts.size(); i++)
         {
+            //画特征点
             cv::circle(image, good_pts[i], 0, cv::Scalar(255 * (1 - track_len[i]), 0, 255 * track_len[i]), 7); //BGR
         }
         
@@ -536,9 +566,7 @@ Matrix3d pnp_R;
             {
                 cv::Mat tmp;
                 vins.drawresult.startInit = true;
-                vins.drawresult.drawAR(vins.imageAI, vins.correct_point_cloud, lateast_P, lateast_R);
-                
-                cv::cvtColor(image, tmp, CV_RGBA2BGR);
+                vins.drawresult.drawAR(vins.imageAI, vins.correct_point_cloud, lateast_P, lateast_R);                cv::cvtColor(image, tmp, CV_RGBA2BGR);
                 cv::Mat mask;
                 cv::Mat imageAI = vins.imageAI;
                 if(!imageAI.empty())
@@ -700,9 +728,12 @@ int kf_global_index;
 bool start_global_optimization = false;
 -(void)process
 {
+    NSLog(@"process: %s", __func__);
     
     std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr>> measurements;
     std::unique_lock<std::mutex> lk(m_buf);
+    
+    //多个IMU数据, 和 一个 图像数据
     con.wait(lk, [&]
              {
                  return (measurements = getMeasurements()).size() != 0;
@@ -713,6 +744,7 @@ bool start_global_optimization = false;
     {
         for(auto &imu_msg : measurement.first)
         {
+            // 把 imu 数据 给 vins
             send_imu(imu_msg);
         }
         
