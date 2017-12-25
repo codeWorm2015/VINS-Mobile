@@ -299,16 +299,16 @@ bool imageCacheEnabled = cameraMode && !USE_PNP;
     {
         UIAlertController *alertDevice = [UIAlertController alertControllerWithTitle:@"Unsupported Device"
                                                                              message:@"Supported devices are: iPhone7 Plus, iPhone7, iPhone6s Plus, iPhone6s" preferredStyle:UIAlertControllerStyleAlert];
-        
+
         UIAlertAction *okAction = [UIAlertAction
                                    actionWithTitle:@"OK"
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction * _Nonnull action) {
-                                       
+
                                    }];
-        
+
         [alertDevice addAction:okAction];
-        
+
         dispatch_async(dispatch_get_main_queue(), ^ {
             [self presentViewController:alertDevice animated:YES completion:nil];
         });
@@ -334,15 +334,15 @@ bool imageCacheEnabled = cameraMode && !USE_PNP;
     }
     
     /*********************************************Start VINS*******************************************/
-    if(versionCheck && deviceCheck)
-    {
+//    if(versionCheck && deviceCheck)
+//    {
         [self imuStartUpdate];
         isCapturing = YES;
         [mainLoop start];
         motionManager = [[CMMotionManager alloc] init];
         frameSize = cv::Size(videoCamera.imageWidth,
                              videoCamera.imageHeight);
-    }
+//    }
 }
 
 /*
@@ -1790,6 +1790,7 @@ DeviceType deviceName()
     
     NSString *device = [NSString stringWithCString:systemInfo.machine
                                           encoding:NSUTF8StringEncoding];
+//    NSString *deviceName = [UIDevice currentDevice].name;
     DeviceType device_type;
     if(([device compare:@"iPhone9,1"] == NSOrderedSame) ||
        ([device compare:@"iPhone9,3"] == NSOrderedSame))
@@ -1824,6 +1825,33 @@ DeviceType deviceName()
     {
         printf("Device iPad pro 12.9\n");
         device_type = iPadPro129;
+    }
+    else if ([device isEqualToString:@"iPhone10,1"])
+    {
+        device_type = iPhone8;
+    }
+    else if ([device isEqualToString:@"iPhone10,4"])
+    {
+        device_type = iPhone8;
+
+    }
+    else if ([device isEqualToString:@"iPhone10,2"])
+    {
+        device_type = iPhone8P;
+
+    }
+    else if ([device isEqualToString:@"iPhone10,5"])
+    {
+        device_type = iPhone8P;
+    }
+    else if ([device isEqualToString:@"iPhone10,3"])
+    {
+        device_type = iPhoneX;
+        
+    }
+    else if ([device isEqualToString:@"iPhone10,6"])
+    {
+        device_type = iPhoneX;
     }
     else
     {

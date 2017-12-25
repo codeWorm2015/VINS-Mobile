@@ -56,6 +56,21 @@ bool setGlobalParam(DeviceType device)
             return true;
             break;
             
+        case iPhone8:
+//            printf("Device iPhone7 param\n");
+            FOCUS_LENGTH_X = 526.958;
+            FOCUS_LENGTH_Y = 527.179;
+            PX = 244.473;
+            PY = 313.844;
+            SOLVER_TIME = 0.06;
+            FREQ = 3;
+            
+            //extrinsic param
+            TIC_X = 0.0;
+            TIC_Y = 0.092;
+            TIC_Z = 0.01;
+            return true;
+            break;
         case iPhone6s:
             printf("Device iPhone6s param\n");
             FOCUS_LENGTH_Y = 549.477;
