@@ -358,6 +358,8 @@ Vector3f lateast_P;
 Matrix3f lateast_R;
 
 cv::Mat pnp_image;
+
+//pnp 根据 n 个空间点 估计相机运动, P: position 位移    R: rotation 旋转
 Vector3d pnp_P;
 Matrix3d pnp_R;
 
@@ -367,25 +369,6 @@ Matrix3d pnp_R;
     if(isCapturing == YES)
     {
         //NSLog(@"image processing");
-        float lowPart = image.at<float>(0,0);  //modify opencv library, timestamp was stored at index 0,0
-        float highPart = image.at<float>(0,1);
-        //image.at<float>(0,0) = image.at<float>(1,0);
-        //image.at<float>(0,1) = image.at<float>(1,1);
-        
-        //新建   img_msg
-        
-        shared_ptr<IMG_MSG> img_msg(new IMG_MSG());
-        //cout << (videoCamera->grayscaleMode) << endl;
-        //img_msg->header = [[NSDate date] timeIntervalSince1970];
-        
-        //时间戳
-        img_msg->header = [[NSProcessInfo processInfo] systemUptime];
-        
-        float Group[2];
-        Group[0] = lowPart;
-        Group[1] = highPart;
-        double* time_now_decode = (double*)Group;
-        double time_stamp = *time_now_decode;
         
         if(lateast_imu_time <= 0)
         {
@@ -393,13 +376,26 @@ Matrix3d pnp_R;
             cv::flip(image,image,-1);
             return;
         }
-        //img_msg->header = lateast_imu_time;
         
-        //更新时间戳
-        img_msg->header = time_stamp;
+        //新建   img_msg
+        shared_ptr<IMG_MSG> img_msg(new IMG_MSG());
+        
+        //时间戳:
+        //image 前两个浮点数存储的是时间戳
+        float lowPart = image.at<float>(0,0);  //modify opencv library, timestamp was stored at index 0,0
+        float highPart = image.at<float>(0,1);
+        float Group[2];
+        Group[0] = lowPart;
+        Group[1] = highPart;
+        double* time_now_decode = (double*)Group;
+        double time_stamp = *time_now_decode;
+        img_msg->header = time_stamp;    //更新时间戳
+
+    
         BOOL isNeedRotation = image.size() != frameSize;
         
-        //for save data
+        
+        //for save data   -  先不用看这个 if
         cv::Mat input_frame;
         if(start_playback)
         {
@@ -426,6 +422,8 @@ Matrix3d pnp_R;
             input_frame = image;
         }
         
+        
+        //这个 if 也先不用看
         if(start_record)
         {
             imgData.header = img_msg->header;
@@ -439,61 +437,49 @@ Matrix3d pnp_R;
                 return;
         }
         
-        prevTime = mach_absolute_time();
         
         cv::Mat gray;
+        //灰度处理
         cv::cvtColor(input_frame, gray, CV_RGBA2GRAY);
-        cv::Mat img_with_feature;
         cv::Mat img_equa;
-        
-        //使图像变的清晰
+        //使图像变的清晰  -- 自适应直方图均衡
         cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
         clahe->setClipLimit(3);
         clahe->apply(gray, img_equa);
+        //output:    img_equa
         
-        //img_equa = gray;
+        
         
         //获取特征点
         TS(time_feature);
         
         m_depth_feedback.lock();
-        //上一次的 特征
+        //上一次的 特征    solved_features  和 solved_vins 为 process 方法获得
         featuretracker.solved_features = solved_features;
-        
         featuretracker.solved_vins = solved_vins;
         m_depth_feedback.unlock();
         
         m_imu_feedback.lock();
-        
-        //获取这个 时间戳之前的 imu 数据;
+        //获取这个时间戳之前的 imu 数据;
         featuretracker.imu_msgs = getImuMeasurements(img_msg->header);
         m_imu_feedback.unlock();
         
         vector<Point2f> good_pts;
         vector<double> track_len;
         bool vins_normal = (vins.solver_flag == VINS::NON_LINEAR);
+        //USE_PNP  AR 时 true  坐标系时为 false
         featuretracker.use_pnp = USE_PNP;
         
-        cout<<"feature 前: "<<pnp_P<<endl;
-        cout<<"前  frame_cnt: "<<frame_cnt<<endl;
-        
+        cv::Mat img_with_feature;
         //这一次的图像, 上一次 的位置信息
         // 得到特征点
         featuretracker.readImage(img_equa, img_with_feature, frame_cnt, good_pts, track_len, img_msg->header, pnp_P, pnp_R, vins_normal);
         //得到了 最新的 position  和 rotation
         
-        cout<<"feature 后: "<<pnp_P<<endl;
-        cout<<"后  frame_cnt: "<<frame_cnt<<endl;
         TE(time_feature);
-        
-        //cvtColor(img_equa, img_equa, CV_GRAY2BGR);
-        for (int i = 0; i < good_pts.size(); i++)
-        {
-            //画特征点
-            cv::circle(image, good_pts[i], 0, cv::Scalar(255 * (1 - track_len[i]), 0, 255 * track_len[i]), 7); //BGR
-        }
-        
+   
         //image msg buf
+        //featuretracker.img_cnt 是根据 当前帧数赋的值, 0 1 2 会赋这几个值, 也就是每三帧调用以下这个if
         if(featuretracker.img_cnt==0)
         {
             img_msg->point_clouds = featuretracker.image_msg;
@@ -503,14 +489,14 @@ Matrix3d pnp_R;
             //NSLog(@"Img timestamp %lf",img_msg_buf.front()->header);
             m_buf.unlock();
             con.notify_one();
-            if(imageCacheEnabled)
+            if(imageCacheEnabled)  // 这个是 绘制3D坐标系需要
             {
                 image_data_cache.header = img_msg->header;
                 image_data_cache.image = MatToUIImage(image);
                 image_pool.push(image_data_cache);
             }
             
-            if(LOOP_CLOSURE)
+            if(LOOP_CLOSURE)   //提供给回环检测的数据
             {
                 m_image_buf_loop.lock();
                 cv::Mat loop_image = gray.clone();
@@ -522,11 +508,17 @@ Matrix3d pnp_R;
         }
         
         featuretracker.img_cnt = (featuretracker.img_cnt + 1) % FREQ;
+        
+        //cvtColor(img_equa, img_equa, CV_GRAY2BGR);
         for (int i = 0; i < good_pts.size(); i++)
         {
+            //画特征点
             cv::circle(image, good_pts[i], 0, cv::Scalar(255 * (1 - track_len[i]), 0, 255 * track_len[i]), 7); //BGR
         }
+        
         TS(visualize);
+        
+        
         if(imageCacheEnabled)
         {
             //use aligned vins and image
@@ -776,7 +768,7 @@ bool start_global_optimization = false;
                 it_per_id.used_num = it_per_id.feature_per_frame.size();
                 if (!(it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2))
                     continue;
-                if (it_per_id.solve_flag != 1)
+                if (it_per_id.solve_flag != 1)   // =1  solved success
                     continue;
                 int imu_i = it_per_id.start_frame;
                 Vector3d pts_i = it_per_id.feature_per_frame[0].point * it_per_id.estimated_depth;
@@ -893,6 +885,7 @@ bool start_global_optimization = false;
                         if (kf->has_loop)
                         {
                             kf_global_index = kf->global_index;
+                            NSLog(@" -- start_global_optimization -- ");
                             start_global_optimization = true;
                         }
                         break;
@@ -994,6 +987,8 @@ bool start_global_optimization = false;
                     retrive_data.measurements = measurements_old_norm;
                     retrive_data.features_ids = features_id;
                     vins.retrive_pose_data = (retrive_data);
+                    NSLog(@" -- 回环检测 检测 到 回环");
+                    
                     
                     //cout << "old pose " << T_w_i_old.transpose() << endl;
                     //cout << "refinded pose " << T_w_i_refine.transpose() << endl;

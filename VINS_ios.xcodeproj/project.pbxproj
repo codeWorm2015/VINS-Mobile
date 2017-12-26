@@ -59,7 +59,6 @@
 		8AEB6B411E77C0FA00F9F3EE /* VocabularyBinary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8AEB6B3F1E77C0FA00F9F3EE /* VocabularyBinary.cpp */; };
 		8AEB6B421E77C0FA00F9F3EE /* VocabularyBinary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8AEB6B3F1E77C0FA00F9F3EE /* VocabularyBinary.cpp */; };
 		8AEB6B431E77C0FA00F9F3EE /* VocabularyBinary.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 8AEB6B401E77C0FA00F9F3EE /* VocabularyBinary.hpp */; };
-		8AF3BDB21E6C08B3009A1FEC /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C22203881E67072B00B48629 /* opencv2.framework */; };
 		C222033F1E66E0FA00B48629 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C222032A1E66E0FA00B48629 /* Timestamp.cpp */; };
 		C22203461E66E0FA00B48629 /* Random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C22203381E66E0FA00B48629 /* Random.cpp */; };
 		C22203651E66E1B100B48629 /* BRIEF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C222034E1E66E1B100B48629 /* BRIEF.cpp */; };
@@ -115,6 +114,7 @@
 		C2EEEC661DD5DA5400F082DB /* FragmentShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = C2EEEC651DD5DA5400F082DB /* FragmentShader.glsl */; };
 		C2EEEC681DD5DA5C00F082DB /* VertexShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = C2EEEC671DD5DA5C00F082DB /* VertexShader.glsl */; };
 		C2FCEA941DE6B2BE001682A2 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2FCEA931DE6B2BE001682A2 /* CoreMotion.framework */; };
+		FCA4BFCF1FF222F100D1AE95 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C22203881E67072B00B48629 /* opencv2.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -255,7 +255,6 @@
 				8AA6E0341E768D2B002DCA4A /* Metal.framework in Frameworks */,
 				8A4DD0251E6C141B009FCC78 /* boost.a in Frameworks */,
 				8A4DD0261E6C141D009FCC78 /* libjpeg.a in Frameworks */,
-				8AF3BDB21E6C08B3009A1FEC /* opencv2.framework in Frameworks */,
 				8AB374881E6BA38B00C1E398 /* CoreGraphics.framework in Frameworks */,
 				8AB3748A1E6BA38B00C1E398 /* UIKit.framework in Frameworks */,
 				8AB3748B1E6BA38B00C1E398 /* AVFoundation.framework in Frameworks */,
@@ -265,6 +264,7 @@
 				8AB374851E6BA37E00C1E398 /* GLKit.framework in Frameworks */,
 				8AB374841E6BA37B00C1E398 /* CoreMotion.framework in Frameworks */,
 				8AB374891E6BA38B00C1E398 /* Foundation.framework in Frameworks */,
+				FCA4BFCF1FF222F100D1AE95 /* opencv2.framework in Frameworks */,
 				8AB374901E6BA38B00C1E398 /* CoreImage.framework in Frameworks */,
 				8AB3748F1E6BA38B00C1E398 /* CoreMedia.framework in Frameworks */,
 				8AB374861E6BA38100C1E398 /* OpenGLES.framework in Frameworks */,

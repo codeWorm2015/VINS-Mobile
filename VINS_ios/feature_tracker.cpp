@@ -47,6 +47,7 @@ void FeatureTracker::addPoints()
     }
 }
 
+//排序 是这个几个vector 都按照 track_cnt 值进行排序
 void FeatureTracker::setMask()
 {
     mask.setTo(255);
@@ -178,6 +179,7 @@ void FeatureTracker::readImage(const cv::Mat &_img, cv::Mat &result, int _frame_
             vector<float> err;
             
             //TS(time_track);
+            //追踪特征点
             calcOpticalFlowPyrLK(cur_img, forw_img, cur_pts, forw_pts, status, err, cv::Size(21, 21), 3);
             //TE(time_track);
             for (int i = 0; i < int(forw_pts.size()); i++)
@@ -194,7 +196,7 @@ void FeatureTracker::readImage(const cv::Mat &_img, cv::Mat &result, int _frame_
             if (forw_pts.size() >= 8)
             {
                 vector<uchar> status;
-                
+                //去除错误跟踪
                 cv::findFundamentalMat(cur_pts, forw_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status);
                 reduceVector(cur_pts, status);
                 reduceVector(pre_pts, status);

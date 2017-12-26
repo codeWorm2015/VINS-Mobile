@@ -376,6 +376,7 @@ void VINS::processIMU(double dt, const Vector3d &linear_acceleration, const Vect
 
 void VINS::processImage(map<int, Vector3d> &image_msg, double header, int buf_num)
 {
+    cout<<"frame count -- "<< frame_count<<endl;
     int track_num;
     printf("adding feature points %lu\n", image_msg.size());
     if (f_manager.addFeatureCheckParallax(frame_count, image_msg, track_num))
